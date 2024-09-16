@@ -5,6 +5,11 @@
 package ed.xmlbookproject.Services;
 
 import ed.xmlbookproject.XmlBookProject;
+import ed.xmlbookproject.models.Book;
+import jakarta.xml.bind.JAXBContext;
+import jakarta.xml.bind.JAXBException;
+import jakarta.xml.bind.SchemaOutputResolver;
+import jakarta.xml.bind.Unmarshaller;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -12,21 +17,28 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import javax.xml.XMLConstants;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Result;
 import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
+import javax.xml.validation.Schema;
+import javax.xml.validation.SchemaFactory;
+import lombok.extern.slf4j.Slf4j;
+import org.xml.sax.SAXException;
 
 /**
  *
  * @author matin
  */
+@Slf4j
 public class xmlService {
     public static void parserTxtToXml(String sourceFile) {
         File f = new File(sourceFile);
@@ -152,4 +164,72 @@ public class xmlService {
         }
     }
     
+    
+    public static void xsdGenerator() throws IOException {
+        
+        try {
+            String xsdFileName = "C:\\Users\\matin\\OneDrive\\Έγγραφα\\NetBeansProjects\\XmlBookProject\\src\\data_out\\GeneratedXsd.xsd";
+            JAXBContext context = JAXBContext.newInstance(Book.class);
+            context.generateSchema(new MySchemaOutputResolver(xsdFileName));
+
+        } catch (JAXBException e) {
+            e.printStackTrace();
+        }
+    }
+
+    
+    static class MySchemaOutputResolver extends SchemaOutputResolver {
+
+        private final String xsdFileName;
+
+        public MySchemaOutputResolver(String xsdFileName) {
+            this.xsdFileName = xsdFileName;
+        }
+        
+        @Override
+        public Result createOutput(String namespaceUri, String suggestedFileName) throws IOException {
+            File file = new File(xsdFileName);
+            StreamResult result = new StreamResult(file);
+            result.setSystemId(file.toURI().toString());
+            return result;
+        }
+    }
+    
+    public static boolean xmlValidation(String xmlFileName, String xsdFileame, Class xmlClass){
+        boolean validity = xmlValidator("C:\\Users\\matin\\OneDrive\\Έγγραφα\\NetBeansProjects\\XmlBookProject\\src\\data_out\\GeneratedStax-Indented.xml" ,  "C:\\Users\\matin\\OneDrive\\Έγγραφα\\NetBeansProjects\\XmlBookProject\\src\\data_out\\GeneratedXsd.xsd", Book.class);
+        boolean returnStatus = false;
+        try {
+            JAXBContext jaxbContext = JAXBContext.newInstance(xmlClass );
+            Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
+            SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+            Schema schema = schemaFactory.newSchema(new File(xsdFileame));
+            unmarshaller.setSchema(schema);
+            File xmlFile = new File(xmlFileName);
+            Object object = unmarshaller.unmarshal(xmlFile);
+            returnStatus = true;
+       } catch (JAXBException | SAXException e) {
+            System.out.println("not valid");
+        } 
+         return returnStatus;
+    }
+    
+    public static boolean xmlValidator(String xmlFileName, String xsdFileame, Class xmlClass) {
+        log.debug("method starts");
+        boolean returnStatus = false;
+        try {
+            JAXBContext jaxbContext = JAXBContext.newInstance(xmlClass );
+            Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
+            SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+            Schema schema = schemaFactory.newSchema(new File(xsdFileame));
+            unmarshaller.setSchema(schema);
+            File xmlFile = new File(xmlFileName);
+            Object object = unmarshaller.unmarshal(xmlFile);
+            log.debug("xml validated ", object);
+            returnStatus = true;
+       } catch (JAXBException | SAXException e) {
+           log.debug("not valid xml", e);
+        } 
+         log.debug("method terminates");
+         return returnStatus;
+    }
 }
