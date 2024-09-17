@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<xs:schema version="1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+  <xs:element name="book" type="bookForGenerated"/>
+
+  <xs:complexType name="bookForGenerated">
+    <xs:sequence>
+      <xs:element name="chapter" type="chapter" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="chapter">
+    <xs:sequence>
+      <xs:element name="paragraph" type="paragraph" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+    <xs:attribute name="number" type="xs:int" use="required"/>
+  </xs:complexType>
+
+  <xs:complexType name="paragraph">
+    <xs:sequence>
+      <xs:element name="line" type="line" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+    <xs:attribute name="number" type="xs:int" use="required"/>
+  </xs:complexType>
+
+  <xs:complexType name="line">
+    <xs:simpleContent>
+      <xs:extension base="xs:string">
+        <xs:attribute name="number" type="xs:int" use="required"/>
+      </xs:extension>
+    </xs:simpleContent>
+  </xs:complexType>
+</xs:schema>
+

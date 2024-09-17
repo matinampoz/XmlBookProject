@@ -6,17 +6,22 @@ package ed.xmlbookproject.models;
 
 import jakarta.xml.bind.annotation.XmlAccessType;
 import jakarta.xml.bind.annotation.XmlAccessorType;
-import jakarta.xml.bind.annotation.XmlValue;
+import jakarta.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlRootElement;
+import java.util.List;
 import lombok.Data;
 
 /**
  *
  * @author matin
  */
+
 @Data
+@XmlRootElement(name = "book")
 @XmlAccessorType(XmlAccessType.FIELD)
-class Word {
-    @XmlValue
-    private String content;
+public class BookForGenerated {
+    @XmlElement(name = "chapter")
+    private List<Chapter> chapters;
+
     
 }

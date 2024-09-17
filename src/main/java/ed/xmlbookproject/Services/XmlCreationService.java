@@ -5,22 +5,30 @@
 package ed.xmlbookproject.Services;
 
 import ed.xmlbookproject.XmlBookProject;
-import ed.xmlbookproject.models.Book;
+import ed.xmlbookproject.models.BookForGenerated;
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.JAXBException;
 import jakarta.xml.bind.SchemaOutputResolver;
 import jakarta.xml.bind.Unmarshaller;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import javax.xml.XMLConstants;
+import javax.xml.stream.XMLEventFactory;
+import javax.xml.stream.XMLEventReader;
+import javax.xml.stream.XMLEventWriter;
+import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
+import javax.xml.stream.events.StartElement;
+import javax.xml.stream.events.XMLEvent;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Result;
 import javax.xml.transform.Source;
@@ -39,7 +47,8 @@ import org.xml.sax.SAXException;
  * @author matin
  */
 @Slf4j
-public class xmlService {
+public class XmlCreationService {
+
     public static int parserTxtToXml(String sourceFile) {
         File f = new File(sourceFile);
         XMLOutputFactory xmlOutputFactory = XMLOutputFactory.newInstance();
@@ -47,7 +56,7 @@ public class xmlService {
         // Counters for statistics
         int chapterCount = 1;
         int wordCount = 0;
-        
+
         LocalDateTime now = LocalDateTime.now();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         String creationDateTime = now.format(formatter);
@@ -74,12 +83,12 @@ public class xmlService {
                     xmlWriter.writeEndElement(); // κλείσιμο του tag paragraph
                     if (paragraphNumber % 20 == 0) {
                         xmlWriter.writeEndElement(); // κλείσιμο του tag chapter
-                        chapterCount++; 
+                        chapterCount++;
                         xmlWriter.writeStartElement("chapter");
                         xmlWriter.writeAttribute("number", String.valueOf(chapterCount));
                     }
                     paragraphNumber++;
-                  
+
                     xmlWriter.writeStartElement("paragraph");
                     xmlWriter.writeAttribute("number", String.valueOf(paragraphNumber));
                 }
@@ -101,7 +110,6 @@ public class xmlService {
                 }
             }
 
-            
             xmlWriter.writeEndElement(); // paragraph
             xmlWriter.writeEndElement(); // chapter
 
@@ -134,7 +142,6 @@ public class xmlService {
 
             xmlWriter.flush();
             xmlWriter.close();
-            
 
             transformToIndentedXml("C:\\Users\\matin\\OneDrive\\Έγγραφα\\NetBeansProjects\\XmlBookProject\\src\\data_out\\GeneratedStax.xml", "C:\\Users\\matin\\OneDrive\\Έγγραφα\\NetBeansProjects\\XmlBookProject\\src\\data_out\\GeneratedStax.xml".replace(".xml", "-Indented.xml"));
 
@@ -144,7 +151,7 @@ public class xmlService {
             return -1;
         }
     }
-    
+
     private static void transformToIndentedXml(String inputFilePath, String outputFilePath) {
         try {
             TransformerFactory transformerFactory = TransformerFactory.newInstance();
@@ -164,73 +171,62 @@ public class xmlService {
             System.err.println("Error transforming XML: " + ex.getMessage());
         }
     }
-    
-    
-    public static void xsdGenerator() throws IOException {
-        
-        try {
-            String xsdFileName = "C:\\Users\\matin\\OneDrive\\Έγγραφα\\NetBeansProjects\\XmlBookProject\\src\\data_out\\GeneratedXsd.xsd";
-            JAXBContext context = JAXBContext.newInstance(Book.class);
-            context.generateSchema(new MySchemaOutputResolver(xsdFileName));
 
-        } catch (JAXBException e) {
-            e.printStackTrace();
+    
+
+ public static void createXmlWithChapters(String inputXml, String outputXml, int start, int end) throws XMLStreamException {
+    XMLInputFactory xmlInputFactory = XMLInputFactory.newInstance();
+    XMLOutputFactory xmlOutputFactory = XMLOutputFactory.newInstance();
+    XMLEventFactory eventFactory = XMLEventFactory.newInstance();
+
+    try (
+        FileInputStream fis = new FileInputStream(inputXml);
+        FileOutputStream fos = new FileOutputStream(outputXml)
+    ) {
+        XMLEventReader reader = xmlInputFactory.createXMLEventReader(fis);
+        XMLEventWriter writer = xmlOutputFactory.createXMLEventWriter(fos);
+
+        int currentChapter = 0;
+        boolean withinSelectedChapters = false;
+
+        writer.add(eventFactory.createStartDocument());
+        writer.add(eventFactory.createStartElement("", "", "book"));
+
+        while (reader.hasNext()) {
+            XMLEvent event = reader.nextEvent();
+
+            if (event.isStartElement()) {
+                StartElement startElement = event.asStartElement();
+                if (startElement.getName().getLocalPart().equals("chapter")) {
+                    currentChapter++;
+
+                    withinSelectedChapters = (currentChapter >= start && currentChapter <= end);
+                }
+            }
+
+            if (withinSelectedChapters) {
+                writer.add(event);
+            }
+
+            if (event.isEndElement()) {
+                if (event.asEndElement().getName().getLocalPart().equals("chapter")) {
+                    if (currentChapter > end) {
+                        withinSelectedChapters = false;
+                    }
+                }
+            }
         }
+
+        writer.add(eventFactory.createEndElement("", "", "book"));
+        writer.add(eventFactory.createEndDocument());
+
+        writer.close();
+        reader.close();
+    } catch (Exception e) {
+        e.printStackTrace();
     }
+}
+
 
     
-    static class MySchemaOutputResolver extends SchemaOutputResolver {
-
-        private final String xsdFileName;
-
-        public MySchemaOutputResolver(String xsdFileName) {
-            this.xsdFileName = xsdFileName;
-        }
-        
-        @Override
-        public Result createOutput(String namespaceUri, String suggestedFileName) throws IOException {
-            File file = new File(xsdFileName);
-            StreamResult result = new StreamResult(file);
-            result.setSystemId(file.toURI().toString());
-            return result;
-        }
-    }
-    
-    public static boolean xmlValidation(String xmlFileName, String xsdFileame, Class xmlClass){
-        boolean validity = xmlValidator("C:\\Users\\matin\\OneDrive\\Έγγραφα\\NetBeansProjects\\XmlBookProject\\src\\data_out\\GeneratedStax-Indented.xml" ,  "C:\\Users\\matin\\OneDrive\\Έγγραφα\\NetBeansProjects\\XmlBookProject\\src\\data_out\\GeneratedXsd.xsd", Book.class);
-        boolean returnStatus = false;
-        try {
-            JAXBContext jaxbContext = JAXBContext.newInstance(xmlClass );
-            Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
-            SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-            Schema schema = schemaFactory.newSchema(new File(xsdFileame));
-            unmarshaller.setSchema(schema);
-            File xmlFile = new File(xmlFileName);
-            Object object = unmarshaller.unmarshal(xmlFile);
-            returnStatus = true;
-       } catch (JAXBException | SAXException e) {
-            System.out.println("not valid");
-        } 
-         return returnStatus;
-    }
-    
-    public static boolean xmlValidator(String xmlFileName, String xsdFileame, Class xmlClass) {
-        log.debug("method starts");
-        boolean returnStatus = false;
-        try {
-            JAXBContext jaxbContext = JAXBContext.newInstance(xmlClass );
-            Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
-            SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-            Schema schema = schemaFactory.newSchema(new File(xsdFileame));
-            unmarshaller.setSchema(schema);
-            File xmlFile = new File(xmlFileName);
-            Object object = unmarshaller.unmarshal(xmlFile);
-            log.debug("xml validated ", object);
-            returnStatus = true;
-       } catch (JAXBException | SAXException e) {
-           log.debug("not valid xml", e);
-        } 
-         log.debug("method terminates");
-         return returnStatus;
-    }
 }
