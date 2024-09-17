@@ -40,7 +40,7 @@ import org.xml.sax.SAXException;
  */
 @Slf4j
 public class xmlService {
-    public static void parserTxtToXml(String sourceFile) {
+    public static int parserTxtToXml(String sourceFile) {
         File f = new File(sourceFile);
         XMLOutputFactory xmlOutputFactory = XMLOutputFactory.newInstance();
 
@@ -60,12 +60,11 @@ public class xmlService {
             xmlWriter.writeStartElement("book");
 
             String lineOfFile;
-            int chapterNumber = 1;
             int paragraphNumber = 1;
             int lineNumber = 1;
 
             xmlWriter.writeStartElement("chapter");
-            xmlWriter.writeAttribute("number", String.valueOf(chapterNumber)); // προσθήκη attribute στο κεφάλαιο
+            xmlWriter.writeAttribute("number", String.valueOf(chapterCount)); // προσθήκη attribute στο κεφάλαιο
 
             xmlWriter.writeStartElement("paragraph");
             xmlWriter.writeAttribute("number", String.valueOf(paragraphNumber));
@@ -75,10 +74,9 @@ public class xmlService {
                     xmlWriter.writeEndElement(); // κλείσιμο του tag paragraph
                     if (paragraphNumber % 20 == 0) {
                         xmlWriter.writeEndElement(); // κλείσιμο του tag chapter
-                        chapterNumber++;
                         chapterCount++; 
                         xmlWriter.writeStartElement("chapter");
-                        xmlWriter.writeAttribute("number", String.valueOf(chapterNumber));
+                        xmlWriter.writeAttribute("number", String.valueOf(chapterCount));
                     }
                     paragraphNumber++;
                   
@@ -136,11 +134,14 @@ public class xmlService {
 
             xmlWriter.flush();
             xmlWriter.close();
+            
 
             transformToIndentedXml("C:\\Users\\matin\\OneDrive\\Έγγραφα\\NetBeansProjects\\XmlBookProject\\src\\data_out\\GeneratedStax.xml", "C:\\Users\\matin\\OneDrive\\Έγγραφα\\NetBeansProjects\\XmlBookProject\\src\\data_out\\GeneratedStax.xml".replace(".xml", "-Indented.xml"));
 
+            return chapterCount;
         } catch (IOException | XMLStreamException ex) {
             System.err.println(ex.getMessage());
+            return -1;
         }
     }
     
