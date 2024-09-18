@@ -21,15 +21,15 @@ import org.xml.sax.SAXException;
  */
 @Slf4j
 public class XmlValidationService {
-    
-    public static boolean xmlValidation(String xmlFileName, String xsdFileame, Class xmlClass) {
-        boolean validity = xmlValidator("C:\\Users\\matin\\OneDrive\\Έγγραφα\\NetBeansProjects\\XmlBookProject\\src\\data_out\\GeneratedStax-Indented.xml", "C:\\Users\\matin\\OneDrive\\Έγγραφα\\NetBeansProjects\\XmlBookProject\\src\\data_out\\GeneratedXsd.xsd", BookForGenerated.class);
+
+    public static boolean xmlValidation(String xmlFileName, String xsdFileName, Class xmlClass) {
+        boolean validity = xmlValidator(xmlFileName, xsdFileName, xmlClass);
         boolean returnStatus = false;
         try {
             JAXBContext jaxbContext = JAXBContext.newInstance(xmlClass);
             Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
             SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-            Schema schema = schemaFactory.newSchema(new File(xsdFileame));
+            Schema schema = schemaFactory.newSchema(new File(xsdFileName));
             unmarshaller.setSchema(schema);
             File xmlFile = new File(xmlFileName);
             Object object = unmarshaller.unmarshal(xmlFile);
@@ -40,17 +40,23 @@ public class XmlValidationService {
         return returnStatus;
     }
 
-    public static boolean xmlValidator(String xmlFileName, String xsdFileame, Class xmlClass) {
-        log.debug("method starts");
+    public static boolean xmlValidator(String xmlFileName, String xsdFileName, Class xmlClass) {
+
         boolean returnStatus = false;
         try {
+
             JAXBContext jaxbContext = JAXBContext.newInstance(xmlClass);
             Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
             SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-            Schema schema = schemaFactory.newSchema(new File(xsdFileame));
+            log.debug("method starts1");
+            Schema schema = schemaFactory.newSchema(new File(xsdFileName)); //edw
+
             unmarshaller.setSchema(schema);
+
             File xmlFile = new File(xmlFileName);
+
             Object object = unmarshaller.unmarshal(xmlFile);
+            log.debug("method starts2");
             log.debug("xml validated ", object);
             returnStatus = true;
         } catch (JAXBException | SAXException e) {
@@ -59,5 +65,5 @@ public class XmlValidationService {
         log.debug("method terminates");
         return returnStatus;
     }
-    
+
 }

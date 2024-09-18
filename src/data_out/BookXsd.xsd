@@ -37,6 +37,7 @@
       <xs:element name="totalChapters" type="xs:int"/>
       <xs:element name="totalParagraphs" type="xs:int"/>
       <xs:element name="totalWords" type="xs:int"/>
+      <xs:element name="uniqueWords" type="xs:int"/>
       <xs:element name="creationDateTime" type="xs:string" minOccurs="0"/>
       <xs:element name="author" type="xs:string" minOccurs="0"/>
       <xs:element name="applicationClass" type="xs:string" minOccurs="0"/>

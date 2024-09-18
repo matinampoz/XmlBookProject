@@ -5,11 +5,6 @@
 package ed.xmlbookproject.Services;
 
 import ed.xmlbookproject.XmlBookProject;
-import ed.xmlbookproject.models.BookForGenerated;
-import jakarta.xml.bind.JAXBContext;
-import jakarta.xml.bind.JAXBException;
-import jakarta.xml.bind.SchemaOutputResolver;
-import jakarta.xml.bind.Unmarshaller;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -19,7 +14,12 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import javax.xml.XMLConstants;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import static java.util.HashMap.newHashMap;
+import java.util.List;
+import java.util.Map;
 import javax.xml.stream.XMLEventFactory;
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLEventWriter;
@@ -30,17 +30,13 @@ import javax.xml.stream.XMLStreamWriter;
 import javax.xml.stream.events.StartElement;
 import javax.xml.stream.events.XMLEvent;
 import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Result;
 import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
-import javax.xml.validation.Schema;
-import javax.xml.validation.SchemaFactory;
 import lombok.extern.slf4j.Slf4j;
-import org.xml.sax.SAXException;
 
 /**
  *
@@ -56,6 +52,8 @@ public class XmlCreationService {
         // Counters for statistics
         int chapterCount = 1;
         int wordCount = 0;
+        int uniqueWordCount = 0;
+        Map<Integer, String> uniqueWords = new HashMap<>();
 
         LocalDateTime now = LocalDateTime.now();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
@@ -101,6 +99,16 @@ public class XmlCreationService {
 
                     String lineText = lineOfFile.substring(start, index + 1);
                     xmlWriter.writeCharacters(lineText);
+                    List<String> wordArray = new ArrayList<>(Arrays.asList(lineText.split("\\s+")));
+
+                    // Ελέγχουμε κάθε λέξη
+                    for (String word : wordArray) {
+                        // Προσθέτουμε τη λέξη στο HashMap μόνο αν δεν υπάρχει ήδη ως τιμή
+                        if (!uniqueWords.containsValue(word)) {
+                            uniqueWords.put(uniqueWordCount, word);
+                            uniqueWordCount++;
+                        }
+                    }
                     wordCount += lineText.split("\\s+").length; // Count words
 
                     xmlWriter.writeEndElement(); // κλείσιμο του tag line
@@ -123,6 +131,9 @@ public class XmlCreationService {
             xmlWriter.writeEndElement();
             xmlWriter.writeStartElement("totalWords");
             xmlWriter.writeCharacters(String.valueOf(wordCount));
+            xmlWriter.writeEndElement();
+            xmlWriter.writeStartElement("uniqueWords");
+            xmlWriter.writeCharacters(String.valueOf(uniqueWordCount));
             xmlWriter.writeEndElement();
             xmlWriter.writeStartElement("creationDateTime");
             xmlWriter.writeCharacters(creationDateTime);
@@ -172,61 +183,56 @@ public class XmlCreationService {
         }
     }
 
-    
+    public static void createXmlWithChapters(String inputXml, String outputXml, int start, int end) throws XMLStreamException {
+        XMLInputFactory xmlInputFactory = XMLInputFactory.newInstance();
+        XMLOutputFactory xmlOutputFactory = XMLOutputFactory.newInstance();
+        XMLEventFactory eventFactory = XMLEventFactory.newInstance();
 
- public static void createXmlWithChapters(String inputXml, String outputXml, int start, int end) throws XMLStreamException {
-    XMLInputFactory xmlInputFactory = XMLInputFactory.newInstance();
-    XMLOutputFactory xmlOutputFactory = XMLOutputFactory.newInstance();
-    XMLEventFactory eventFactory = XMLEventFactory.newInstance();
+        try (
+                FileInputStream fis = new FileInputStream(inputXml); FileOutputStream fos = new FileOutputStream(outputXml)) {
+            XMLEventReader reader = xmlInputFactory.createXMLEventReader(fis);
+            XMLEventWriter writer = xmlOutputFactory.createXMLEventWriter(fos);
 
-    try (
-        FileInputStream fis = new FileInputStream(inputXml);
-        FileOutputStream fos = new FileOutputStream(outputXml)
-    ) {
-        XMLEventReader reader = xmlInputFactory.createXMLEventReader(fis);
-        XMLEventWriter writer = xmlOutputFactory.createXMLEventWriter(fos);
+            int currentChapter = 0;
+            boolean withinSelectedChapters = false;
+      
 
-        int currentChapter = 0;
-        boolean withinSelectedChapters = false;
+            writer.add(eventFactory.createStartDocument());
+            writer.add(eventFactory.createStartElement("", "", "book"));
 
-        writer.add(eventFactory.createStartDocument());
-        writer.add(eventFactory.createStartElement("", "", "book"));
+            while (reader.hasNext()) {
+                XMLEvent event = reader.nextEvent();
 
-        while (reader.hasNext()) {
-            XMLEvent event = reader.nextEvent();
+                if (event.isStartElement()) {
+                    StartElement startElement = event.asStartElement();
+                    if (startElement.getName().getLocalPart().equals("chapter")) {
+                        currentChapter++;
 
-            if (event.isStartElement()) {
-                StartElement startElement = event.asStartElement();
-                if (startElement.getName().getLocalPart().equals("chapter")) {
-                    currentChapter++;
-
-                    withinSelectedChapters = (currentChapter >= start && currentChapter <= end);
+                        withinSelectedChapters = (currentChapter >= start && currentChapter <= end);
+                    }
                 }
-            }
 
-            if (withinSelectedChapters) {
-                writer.add(event);
-            }
+                if (withinSelectedChapters) {
+                    writer.add(event);
+                }
 
-            if (event.isEndElement()) {
-                if (event.asEndElement().getName().getLocalPart().equals("chapter")) {
-                    if (currentChapter > end) {
-                        withinSelectedChapters = false;
+                if (event.isEndElement()) {
+                    if (event.asEndElement().getName().getLocalPart().equals("chapter")) {
+                        if (currentChapter > end) {
+                            withinSelectedChapters = false;
+                        }
                     }
                 }
             }
+
+            writer.add(eventFactory.createEndElement("", "", "book"));
+            writer.add(eventFactory.createEndDocument());
+
+            writer.close();
+            reader.close();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-
-        writer.add(eventFactory.createEndElement("", "", "book"));
-        writer.add(eventFactory.createEndDocument());
-
-        writer.close();
-        reader.close();
-    } catch (Exception e) {
-        e.printStackTrace();
     }
-}
 
-
-    
 }

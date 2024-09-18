@@ -26,6 +26,9 @@ public class Statistics {
 
     @XmlElement
     private int totalWords;
+    
+    @XmlElement
+    private int uniqueWords;
 
     @XmlElement
     private String creationDateTime;

@@ -32,7 +32,7 @@ public class XmlBookProject {
             System.out.println("Xsd has benn generated");
 
             System.out.println("Validate the original xml");
-            if (XmlValidationService.xmlValidation("C:\\Users\\matin\\OneDrive\\Έγγραφα\\NetBeansProjects\\XmlBookProject\\src\\data_out\\GeneratedStax-Indented.xml", "C:\\Users\\matin\\OneDrive\\Έγγραφα\\NetBeansProjects\\XmlBookProject\\src\\data_out\\GeneratedXsd.xsd", BookForGenerated.class)) {
+            if (XmlValidationService.xmlValidation("C:\\Users\\matin\\OneDrive\\Έγγραφα\\NetBeansProjects\\XmlBookProject\\src\\data_out\\GeneratedStax-Indented.xml", "C:\\Users\\matin\\OneDrive\\Έγγραφα\\NetBeansProjects\\XmlBookProject\\src\\data_out\\BookXsd.xsd", Book.class)) {
                 System.out.println("The xml is valid");
             } else {
                 System.out.println("The xml is not valid");
@@ -58,7 +58,7 @@ public class XmlBookProject {
             System.out.println("Xsd has benn generated");
 
             System.out.println("Validate the second xml");
-            if (XmlValidationService.xmlValidation("C:\\Users\\matin\\OneDrive\\Έγγραφα\\NetBeansProjects\\XmlBookProject\\src\\data_out\\GeneratedStax-Indented.xml", "C:\\Users\\matin\\OneDrive\\Έγγραφα\\NetBeansProjects\\XmlBookProject\\src\\data_out\\Book2Xsd.xsd", BookForGenerated.class)) {
+            if (XmlValidationService.xmlValidation("C:\\Users\\matin\\OneDrive\\Έγγραφα\\NetBeansProjects\\XmlBookProject\\src\\data_out\\SelectedChapters.xml", "C:\\Users\\matin\\OneDrive\\Έγγραφα\\NetBeansProjects\\XmlBookProject\\src\\data_out\\Book2Xsd.xsd", BookForGenerated.class)) {
                 System.out.println("The xml is valid");
             } else {
                 System.out.println("The xml is not valid");
