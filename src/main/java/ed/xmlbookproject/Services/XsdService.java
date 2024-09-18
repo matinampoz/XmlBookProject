@@ -4,7 +4,6 @@
  */
 package ed.xmlbookproject.Services;
 
-import ed.xmlbookproject.models.BookForGenerated;
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.JAXBException;
 import jakarta.xml.bind.SchemaOutputResolver;

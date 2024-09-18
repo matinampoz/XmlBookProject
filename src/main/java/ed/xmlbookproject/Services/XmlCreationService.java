@@ -17,7 +17,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import static java.util.HashMap.newHashMap;
 import java.util.List;
 import java.util.Map;
 import javax.xml.stream.XMLEventFactory;
@@ -49,7 +48,6 @@ public class XmlCreationService {
         File f = new File(sourceFile);
         XMLOutputFactory xmlOutputFactory = XMLOutputFactory.newInstance();
 
-        // Counters for statistics
         int chapterCount = 1;
         int wordCount = 0;
         int uniqueWordCount = 0;
@@ -63,6 +61,7 @@ public class XmlCreationService {
 
             XMLStreamWriter xmlWriter = xmlOutputFactory.createXMLStreamWriter(fileWriter);
 
+            log.debug("unformated xml is starting being creating");
             xmlWriter.writeStartDocument("UTF-8", "1.0");
             xmlWriter.writeStartElement("book");
 
@@ -71,16 +70,16 @@ public class XmlCreationService {
             int lineNumber = 1;
 
             xmlWriter.writeStartElement("chapter");
-            xmlWriter.writeAttribute("number", String.valueOf(chapterCount)); // προσθήκη attribute στο κεφάλαιο
+            xmlWriter.writeAttribute("number", String.valueOf(chapterCount));
 
             xmlWriter.writeStartElement("paragraph");
             xmlWriter.writeAttribute("number", String.valueOf(paragraphNumber));
 
             while ((lineOfFile = bf.readLine()) != null) {
                 if (lineOfFile.isBlank()) {
-                    xmlWriter.writeEndElement(); // κλείσιμο του tag paragraph
+                    xmlWriter.writeEndElement();
                     if (paragraphNumber % 20 == 0) {
-                        xmlWriter.writeEndElement(); // κλείσιμο του tag chapter
+                        xmlWriter.writeEndElement();
                         chapterCount++;
                         xmlWriter.writeStartElement("chapter");
                         xmlWriter.writeAttribute("number", String.valueOf(chapterCount));
@@ -101,27 +100,24 @@ public class XmlCreationService {
                     xmlWriter.writeCharacters(lineText);
                     List<String> wordArray = new ArrayList<>(Arrays.asList(lineText.split("\\s+")));
 
-                    // Ελέγχουμε κάθε λέξη
                     for (String word : wordArray) {
-                        // Προσθέτουμε τη λέξη στο HashMap μόνο αν δεν υπάρχει ήδη ως τιμή
                         if (!uniqueWords.containsValue(word)) {
                             uniqueWords.put(uniqueWordCount, word);
                             uniqueWordCount++;
                         }
                     }
-                    wordCount += lineText.split("\\s+").length; // Count words
+                    wordCount += lineText.split("\\s+").length;
 
-                    xmlWriter.writeEndElement(); // κλείσιμο του tag line
+                    xmlWriter.writeEndElement();
                     start = index + 1;
                     index = lineOfFile.indexOf(".", start);
                     lineNumber++;
                 }
             }
 
-            xmlWriter.writeEndElement(); // paragraph
-            xmlWriter.writeEndElement(); // chapter
+            xmlWriter.writeEndElement();
+            xmlWriter.writeEndElement();
 
-            //statitsics
             xmlWriter.writeStartElement("statistics");
             xmlWriter.writeStartElement("totalChapters");
             xmlWriter.writeCharacters(String.valueOf(chapterCount));
@@ -142,24 +138,25 @@ public class XmlCreationService {
             xmlWriter.writeStartElement("author");
             xmlWriter.writeCharacters("AAAAAAAA");
             xmlWriter.writeEndElement();
-
             xmlWriter.writeStartElement("applicationClass");
-            xmlWriter.writeCharacters(XmlBookProject.class.getSimpleName()); // Όνομα της κλάσης
+            xmlWriter.writeCharacters(XmlBookProject.class.getSimpleName());
             xmlWriter.writeEndElement();
-            xmlWriter.writeEndElement(); // statistics
-
-            xmlWriter.writeEndElement(); // book
+            xmlWriter.writeEndElement();
+            xmlWriter.writeEndElement();
             xmlWriter.writeEndDocument();
 
             xmlWriter.flush();
             xmlWriter.close();
 
             transformToIndentedXml("C:\\Users\\matin\\OneDrive\\Έγγραφα\\NetBeansProjects\\XmlBookProject\\src\\data_out\\GeneratedStax.xml", "C:\\Users\\matin\\OneDrive\\Έγγραφα\\NetBeansProjects\\XmlBookProject\\src\\data_out\\GeneratedStax.xml".replace(".xml", "-Indented.xml"));
-
+                       log.debug("xml created");
             return chapterCount;
         } catch (IOException | XMLStreamException ex) {
             System.err.println(ex.getMessage());
             return -1;
+        }
+          finally {
+                       log.debug("method terminates");
         }
     }
 
@@ -168,15 +165,12 @@ public class XmlCreationService {
             TransformerFactory transformerFactory = TransformerFactory.newInstance();
             Transformer transformer = transformerFactory.newTransformer();
 
-            transformer.setOutputProperty(OutputKeys.INDENT, "yes"); //energopoiei esoxes
-            transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4"); //kathe epipedo esoxis - 4 kena
+            transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+            transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");
 
-            Source input = new StreamSource(new File(inputFilePath)); //anagnwsi xml gia epegergasia
-            StreamResult output = new StreamResult(new File(outputFilePath)); // save tou xml
+            Source input = new StreamSource(new File(inputFilePath));
+            StreamResult output = new StreamResult(new File(outputFilePath));
 
-            // ο πυρήνας της διαδικασίας μετασχηματισμού XML. Εφαρμόζει τις μετατροπές που καθορίζονται από το XSLT 
-            // stylesheet στα δεδομένα XML της πηγής (input) και αποθηκεύει το αποτέλεσμα στο καθορισμένο αρχείο ή ροή 
-            // εξόδου (output)
             transformer.transform(input, output);
         } catch (TransformerException ex) {
             System.err.println("Error transforming XML: " + ex.getMessage());
@@ -195,7 +189,6 @@ public class XmlCreationService {
 
             int currentChapter = 0;
             boolean withinSelectedChapters = false;
-      
 
             writer.add(eventFactory.createStartDocument());
             writer.add(eventFactory.createStartElement("", "", "book"));

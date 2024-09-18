@@ -4,7 +4,6 @@
  */
 package ed.xmlbookproject.Services;
 
-import ed.xmlbookproject.models.BookForGenerated;
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.JAXBException;
 import jakarta.xml.bind.Unmarshaller;
@@ -48,15 +47,14 @@ public class XmlValidationService {
             JAXBContext jaxbContext = JAXBContext.newInstance(xmlClass);
             Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
             SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-            log.debug("method starts1");
-            Schema schema = schemaFactory.newSchema(new File(xsdFileName)); //edw
+            log.debug("method starts");
+            Schema schema = schemaFactory.newSchema(new File(xsdFileName));
 
             unmarshaller.setSchema(schema);
 
             File xmlFile = new File(xmlFileName);
 
             Object object = unmarshaller.unmarshal(xmlFile);
-            log.debug("method starts2");
             log.debug("xml validated ", object);
             returnStatus = true;
         } catch (JAXBException | SAXException e) {
