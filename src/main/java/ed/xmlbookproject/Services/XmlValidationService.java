@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package ed.xmlbookproject.Services;
 
 import jakarta.xml.bind.JAXBContext;
@@ -15,9 +11,16 @@ import lombok.extern.slf4j.Slf4j;
 import org.xml.sax.SAXException;
 
 /**
- *
- * @author matin
+ * Service class for XML validation
+ * 
+ * This class provides methods to validate an XML file against an XSD schema
+ * 
+ * xmlValidation validates the given XML file against the specified XSD schema
+ * xmlValidator is internal method to validate an XML file
+ * 
+ * @author matina
  */
+
 @Slf4j
 public class XmlValidationService {
 

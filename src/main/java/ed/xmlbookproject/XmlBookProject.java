@@ -12,24 +12,31 @@ import java.util.logging.Logger;
 import javax.xml.stream.XMLStreamException;
 
 /**
- *
- * @author matin
- *
- * na vrw pws na krataw mono to morfopoiimeno
+ * Main class for the XmlBookProject application
+ * 
+ * This class handles the processing of converting a text file to XML format, 
+ * generating XSDs, validating the XMLs, and generating new XMLs based on selected chapters
+ * 
+ * @author matina
  */
 public class XmlBookProject {
 
     public static void main(String[] args) {
+        String author = "Matina";
+        String line = "=====================================================================";
         try {
             System.out.println("Starting the parsing from txt to xml");
-            int endChapter = XmlCreationService.parserTxtToXml("C:\\Users\\matin\\OneDrive\\Έγγραφα\\NetBeansProjects\\XmlBookProject\\src\\data_in\\sample-lorem-ipsum-text-file.txt");
+            int endChapter = XmlCreationService.parserTxtToXml("C:\\Users\\matin\\OneDrive\\Έγγραφα\\NetBeansProjects\\XmlBookProject\\src\\data_in\\sample-lorem-ipsum-text-file.txt", author);
+            
             System.out.println("The xml has been created");
-
+            System.out.println(line);
+            
 
             System.out.println("Generate the xsd of the original xml");
             String xsdFileName = "C:\\Users\\matin\\OneDrive\\Έγγραφα\\NetBeansProjects\\XmlBookProject\\src\\data_out\\BookXsd.xsd";
             XsdService.xsdGenerator(Book.class, xsdFileName);
             System.out.println("Xsd has benn generated");
+            System.out.println(line);
 
             System.out.println("Validate the original xml");
             if (XmlValidationService.xmlValidation("C:\\Users\\matin\\OneDrive\\Έγγραφα\\NetBeansProjects\\XmlBookProject\\src\\data_out\\GeneratedStax-Indented.xml", "C:\\Users\\matin\\OneDrive\\Έγγραφα\\NetBeansProjects\\XmlBookProject\\src\\data_out\\BookXsd.xsd", Book.class)) {
@@ -37,6 +44,7 @@ public class XmlBookProject {
             } else {
                 System.out.println("The xml is not valid");
             }
+            System.out.println(line);
             
             System.out.println("Generate the second xml");
             Random rand = new Random();
@@ -51,11 +59,13 @@ public class XmlBookProject {
                                              "C:\\Users\\matin\\OneDrive\\Έγγραφα\\NetBeansProjects\\XmlBookProject\\src\\data_out\\SelectedChapters.xml", 
                                              randomNumStart, randomNumEnd);
             System.out.println("The second xml has been created");
+            System.out.println(line);
             
             System.out.println("Generate the xsd of the second xml");
             String xsdFileName2 = "C:\\Users\\matin\\OneDrive\\Έγγραφα\\NetBeansProjects\\XmlBookProject\\src\\data_out\\Book2Xsd.xsd";
             XsdService.xsdGenerator(BookForGenerated.class, xsdFileName2);
             System.out.println("Xsd has benn generated");
+            System.out.println(line);
 
             System.out.println("Validate the second xml");
             if (XmlValidationService.xmlValidation("C:\\Users\\matin\\OneDrive\\Έγγραφα\\NetBeansProjects\\XmlBookProject\\src\\data_out\\SelectedChapters.xml", "C:\\Users\\matin\\OneDrive\\Έγγραφα\\NetBeansProjects\\XmlBookProject\\src\\data_out\\Book2Xsd.xsd", BookForGenerated.class)) {

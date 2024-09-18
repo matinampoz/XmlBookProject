@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package ed.xmlbookproject.Services;
 
 import ed.xmlbookproject.XmlBookProject;
@@ -38,13 +34,21 @@ import javax.xml.transform.stream.StreamSource;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- *
- * @author matin
+ * Service class for XML creation and manipulation
+ * 
+ * Handles the conversion of text files to XML, formatting the XML, and 
+ * generating XMLs with selected chapters.
+ * 
+ * parserTxtToXml parses a text file and converts it to an unformatted XML
+ * transformToFormatedXml transforms the generated unformatted XML into a formatted XML
+ * createXmlWithChapters generates an XML containing only the selected chapters from an input XML
+ * 
+ * @author matina
  */
 @Slf4j
 public class XmlCreationService {
 
-    public static int parserTxtToXml(String sourceFile) {
+    public static int parserTxtToXml(String sourceFile, String author) {
         File f = new File(sourceFile);
         XMLOutputFactory xmlOutputFactory = XMLOutputFactory.newInstance();
 
@@ -136,7 +140,7 @@ public class XmlCreationService {
             xmlWriter.writeEndElement();
 
             xmlWriter.writeStartElement("author");
-            xmlWriter.writeCharacters("AAAAAAAA");
+            xmlWriter.writeCharacters(author);
             xmlWriter.writeEndElement();
             xmlWriter.writeStartElement("applicationClass");
             xmlWriter.writeCharacters(XmlBookProject.class.getSimpleName());
@@ -148,20 +152,19 @@ public class XmlCreationService {
             xmlWriter.flush();
             xmlWriter.close();
 
-            transformToIndentedXml("C:\\Users\\matin\\OneDrive\\Έγγραφα\\NetBeansProjects\\XmlBookProject\\src\\data_out\\GeneratedStax.xml", "C:\\Users\\matin\\OneDrive\\Έγγραφα\\NetBeansProjects\\XmlBookProject\\src\\data_out\\GeneratedStax.xml".replace(".xml", "-Indented.xml"));
-                       log.debug("xml created");
+            transformToFormatedXml("C:\\Users\\matin\\OneDrive\\Έγγραφα\\NetBeansProjects\\XmlBookProject\\src\\data_out\\GeneratedStax.xml", "C:\\Users\\matin\\OneDrive\\Έγγραφα\\NetBeansProjects\\XmlBookProject\\src\\data_out\\GeneratedStax.xml".replace(".xml", "-Indented.xml"));
+            log.debug("xml created");
             return chapterCount;
         } catch (IOException | XMLStreamException ex) {
             System.err.println(ex.getMessage());
             return -1;
         }
-          finally {
-                       log.debug("method terminates");
-        }
+
     }
 
-    private static void transformToIndentedXml(String inputFilePath, String outputFilePath) {
+    private static void transformToFormatedXml(String inputFilePath, String outputFilePath) {
         try {
+            log.debug("formated xml is starting being creating");
             TransformerFactory transformerFactory = TransformerFactory.newInstance();
             Transformer transformer = transformerFactory.newTransformer();
 
@@ -172,6 +175,7 @@ public class XmlCreationService {
             StreamResult output = new StreamResult(new File(outputFilePath));
 
             transformer.transform(input, output);
+            log.debug("formated xml created");
         } catch (TransformerException ex) {
             System.err.println("Error transforming XML: " + ex.getMessage());
         }

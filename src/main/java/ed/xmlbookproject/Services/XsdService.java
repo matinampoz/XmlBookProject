@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package ed.xmlbookproject.Services;
 
 import jakarta.xml.bind.JAXBContext;
@@ -13,7 +9,12 @@ import javax.xml.transform.Result;
 import javax.xml.transform.stream.StreamResult;
 
 /**
- *
+ * Service class for XSD generation
+ * 
+ * Generates an XSD schema from the provided class.
+ * 
+ * xsdGenerator generates an XSD file for the specified class
+ * MySchemaOutputResolver is internal class used to resolve the schema output
  * @author matin
  */
 public class XsdService {
@@ -21,6 +22,7 @@ public class XsdService {
 
         try {
             
+
             JAXBContext context = JAXBContext.newInstance(clazz);
             context.generateSchema(new MySchemaOutputResolver(xsdFileName));
 
